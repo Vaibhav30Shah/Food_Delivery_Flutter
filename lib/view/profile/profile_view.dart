@@ -103,7 +103,7 @@ class _ProfileViewState extends State<ProfileView> {
             ),
           ),
           Text(
-            "Hi there Emilia!",
+            "Hi there!",
             style: TextStyle(
                 color: TColor.primaryText,
                 fontSize: 16,

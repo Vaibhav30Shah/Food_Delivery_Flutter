@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.2 <4.0.0'
+  sdk: '>=2.17.0 <3.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -46,6 +46,20 @@ dependencies:
   intl: ^0.18.1
   flutter_timezone: ^1.0.6
   get_it: ^7.6.0
+  flutter_map: ^6.1.0
+  latlng: ^2.0.5
+  flutter_geocoder: ^0.2.2-nullsafety
+  geolocator: ^11.0.0
+  cloud_firestore: ^4.14.0
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.16.0
+  get: ^4.6.6
+  flutter_native: ^0.1.0
+  flutter_native_splash: ^2.3.7
+  get_storage: ^2.1.1
+  lottie: ^2.7.0
+  connectivity_plus: ^5.0.2
+  iconsax: ^0.0.8
 
 dev_dependencies:
   flutter_test:

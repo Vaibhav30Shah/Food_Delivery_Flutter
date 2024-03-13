@@ -120,24 +120,29 @@ class _MoreViewState extends State<MoreView> {
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => const MyOrderView()));
+                            break;
                           case "3":
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) =>
                                         const NotificationsView()));
+                            break;
                           case "4":
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => const InboxView()));
+                            break;
                           case "5":
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => const AboutUsView()));
+                            break;
                           case "6":
                             ServiceCall.logout();
+                            break;
 
                           default:
                         }

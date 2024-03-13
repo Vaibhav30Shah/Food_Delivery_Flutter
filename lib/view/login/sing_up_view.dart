@@ -4,7 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common/extension.dart';
 import 'package:food_delivery/common_widget/round_button.dart';
+import 'package:food_delivery/common_widget/validation.dart';
+import 'package:food_delivery/features/authentication/controllers/signup_controller.dart';
 import 'package:food_delivery/view/login/login_view.dart';
+import 'package:get/get.dart';
+import 'package:iconsax/iconsax.dart';
 
 import '../../common/globs.dart';
 import '../../common/service_call.dart';
@@ -19,18 +23,14 @@ class SignUpView extends StatefulWidget {
 }
 
 class _SignUpViewState extends State<SignUpView> {
-  TextEditingController txtName = TextEditingController();
-  TextEditingController txtMobile = TextEditingController();
-  TextEditingController txtAddress = TextEditingController();
-  TextEditingController txtEmail = TextEditingController();
-  TextEditingController txtPassword = TextEditingController();
-  TextEditingController txtConfirmPassword = TextEditingController();
+
 
   @override
   Widget build(BuildContext context) {
-
+    final controller=Get.put(SignupController());
     return Scaffold(
       body: SingleChildScrollView(
+        key: controller.signupFormKey,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 25),
           child: Column(
@@ -56,54 +56,83 @@ class _SignUpViewState extends State<SignUpView> {
               const SizedBox(
                 height: 25,
               ),
-              RoundTextfield(
-                hintText: "Name",
-                controller: txtName,
+              TextFormField(
+                // hintText: "Name",
+                controller: controller.txtName,
+                validator: (value)=>TValidator.validateEmptyText('Name', value),
+                expands: false,
+                decoration: const InputDecoration(labelText: 'Name', prefixIcon: Icon(Iconsax.user)),
               ),
               const SizedBox(
                 height: 25,
               ),
-              RoundTextfield(
-                hintText: "Email",
-                controller: txtEmail,
+              TextFormField(
+                // hintText: "Email",
+                controller: controller.txtEmail,
                 keyboardType: TextInputType.emailAddress,
+                validator: (value)=>TValidator.validateEmail(value),
+                expands: false,
+                decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email)),
+
               ),
               const SizedBox(
                 height: 25,
               ),
-              RoundTextfield(
-                hintText: "Mobile No",
-                controller: txtMobile,
+              TextFormField(
+                // hintText: "Mobile No",
+                controller: controller.txtMobile,
                 keyboardType: TextInputType.phone,
+                validator: (value)=>TValidator.validatePhoneNumber(value),
+                expands: false,
+                decoration: const InputDecoration(labelText: 'Phone number', prefixIcon: Icon(Icons.call)),
+
               ),
               const SizedBox(
                 height: 25,
               ),
-              RoundTextfield(
-                hintText: "Address",
-                controller: txtAddress,
+              TextFormField(
+                // hintText: "Address",
+                controller: controller.txtAddress,
+                validator: (value)=>TValidator.validateEmptyText('Address', value),
+                expands: false,
+                decoration: const InputDecoration(labelText: 'Address', prefixIcon: Icon(Iconsax.location_add)),
+
               ),
               const SizedBox(
                 height: 25,
               ),
-              RoundTextfield(
-                hintText: "Password",
-                controller: txtPassword,
+              Obx(()=>TextFormField(
+                // hintText: "Password",
+                controller: controller.txtPassword,
                 obscureText: true,
-              ),
+                validator: (value)=>TValidator.validatePassword(value),
+                expands: controller.hidePassword.value,
+                decoration: InputDecoration(
+                    labelText: 'Password',
+                    prefixIcon: Icon(Iconsax.password_check),
+                  suffixIcon:  IconButton(
+                      onPressed: () => controller.hidePassword.value = !controller.hidePassword.value,
+                      icon: Icon(controller.hidePassword.value ? Iconsax.eye_slash: Iconsax.eye)),
+                ),
+
+              )),
                const SizedBox(
                 height: 25,
               ),
-              RoundTextfield(
-                hintText: "Confirm Password",
-                controller: txtConfirmPassword,
+              TextFormField(
+                // hintText: "Confirm Password",
+                controller: controller.txtConfirmPassword,
                 obscureText: true,
+                validator: (value)=>TValidator.validatePassword(value),
+                expands: false,
+                decoration: const InputDecoration(labelText: 'Confirm Password', prefixIcon: Icon(Iconsax.password_check)),
+
               ),
               const SizedBox(
                 height: 25,
               ),
               RoundButton(title: "Sign Up", onPressed: () {
-                btnSignUp();
+                controller.signup();
                 //  Navigator.push(
                 //       context,
                 //       MaterialPageRoute(
@@ -151,51 +180,51 @@ class _SignUpViewState extends State<SignUpView> {
   }
 
   //TODO: Action
-  void btnSignUp() {
-
-    if (txtName.text.isEmpty) {
-      mdShowAlert(Globs.appName, MSG.enterName, () {});
-      return;
-    }
-
-    if (!txtEmail.text.isEmail) {
-      mdShowAlert(Globs.appName, MSG.enterEmail, () {});
-      return;
-    }
-
-    if (txtMobile.text.isEmpty) {
-      mdShowAlert(Globs.appName, MSG.enterMobile, () {});
-      return;
-    }
-
-    if (txtAddress.text.isEmpty) {
-      mdShowAlert(Globs.appName, MSG.enterAddress, () {});
-      return;
-    }
-
-    if (txtPassword.text.length < 6) {
-      mdShowAlert(Globs.appName, MSG.enterPassword, () {});
-      return;
-    }
-
-    if (txtPassword.text != txtConfirmPassword.text) {
-      mdShowAlert(Globs.appName, MSG.enterPasswordNotMatch, () {});
-      return;
-    }
-
-    endEditing();
-
-    serviceCallSignUp({
-      "name": txtName.text,
-
-      "mobile": txtMobile.text,
-      "email": txtEmail.text,
-      "address": txtAddress.text,
-      "password": txtPassword.text,
-      "push_token": "",
-      "device_type": Platform.isAndroid ? "A" : "I"
-    });
-  }
+  // void btnSignUp() {
+  //
+  //   if (txtName.text.isEmpty) {
+  //     mdShowAlert(Globs.appName, MSG.enterName, () {});
+  //     return;
+  //   }
+  //
+  //   if (!txtEmail.text.isEmail) {
+  //     mdShowAlert(Globs.appName, MSG.enterEmail, () {});
+  //     return;
+  //   }
+  //
+  //   if (txtMobile.text.isEmpty) {
+  //     mdShowAlert(Globs.appName, MSG.enterMobile, () {});
+  //     return;
+  //   }
+  //
+  //   if (txtAddress.text.isEmpty) {
+  //     mdShowAlert(Globs.appName, MSG.enterAddress, () {});
+  //     return;
+  //   }
+  //
+  //   if (txtPassword.text.length < 6) {
+  //     mdShowAlert(Globs.appName, MSG.enterPassword, () {});
+  //     return;
+  //   }
+  //
+  //   if (txtPassword.text != txtConfirmPassword.text) {
+  //     mdShowAlert(Globs.appName, MSG.enterPasswordNotMatch, () {});
+  //     return;
+  //   }
+  //
+  //   endEditing();
+  //
+  //   serviceCallSignUp({
+  //     "name": txtName.text,
+  //
+  //     "mobile": txtMobile.text,
+  //     "email": txtEmail.text,
+  //     "address": txtAddress.text,
+  //     "password": txtPassword.text,
+  //     "push_token": "",
+  //     "device_type": Platform.isAndroid ? "A" : "I"
+  //   });
+  // }
 
   //TODO: ServiceCall
 

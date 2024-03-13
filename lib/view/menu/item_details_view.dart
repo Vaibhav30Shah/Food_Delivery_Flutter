@@ -68,7 +68,7 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 25),
                                 child: Text(
-                                  "Tandoori Chicken Pizza",
+                                  "Tandoori Pizza",
                                   style: TextStyle(
                                       color: TColor.primaryText,
                                       fontSize: 22,
