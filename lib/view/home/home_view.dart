@@ -159,7 +159,7 @@ class _HomeViewState extends State<HomeView> {
     } else if (isHoli) {
       backgroundColor = Colors.orange.withOpacity(0.5);
     } else {
-      backgroundColor = Colors.white;
+      backgroundColor = Colors.purple.withOpacity(0.5);
     }
     return Scaffold(
       body: Container(
@@ -185,6 +185,7 @@ class _HomeViewState extends State<HomeView> {
                         children: [
                           Text(
                             "Good $greet ${ServiceCall.userPayload[KKey.name] ?? ""}!",
+                            // "Good $greet ${Widget.userName} ?? ""}!",
                             style: TextStyle(
                                 color: TColor.primaryText,
                                 fontSize: 20,

@@ -46,7 +46,7 @@ class SignupController extends GetxController{
       final userRepository=Get.put(UserRepository());
       await userRepository.saveUserRecord(user);
 
-      TLoaders.successSnackBar(title: 'Success', message: 'Ypur Account is created.');
+      TLoaders.successSnackBar(title: 'Success', message: 'Your Account is created.');
 
     }catch(e){
       TLoaders.errorSnackBar(title: 'Oh Snap!', message: e.toString());

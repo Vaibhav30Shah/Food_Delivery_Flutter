@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:food_delivery/bindings/general_bindings.dart';
@@ -21,6 +22,8 @@ void main() async {
   HttpOverrides.global = MyHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
   prefs = await SharedPreferences.getInstance();
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
   if(Globs.udValueBool(Globs.userLogin)) {
     ServiceCall.userPayload = Globs.udValue(Globs.userPayload);
@@ -105,9 +108,9 @@ class _MyAppState extends State<MyApp> {
       onGenerateRoute: (routeSettings){
         switch (routeSettings.name) {
           case "welcome":
-              return MaterialPageRoute(builder: (context) => const MainTabView() );
+              return MaterialPageRoute(builder: (context) => const MainTabView(userName: "User") );
           case "Home":
-              return MaterialPageRoute(builder: (context) => const MainTabView() );
+              return MaterialPageRoute(builder: (context) => const MainTabView(userName: "User",) );
           default:
               return MaterialPageRoute(builder: (context) => Scaffold(
                 body: Center(

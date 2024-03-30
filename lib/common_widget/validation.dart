@@ -11,7 +11,7 @@ class TValidator {
       return 'Email is required.';
     }
 // Regular expression for email validation
-    final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.) + [\w-]{2,4}$');
+    final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
     if (!emailRegExp.hasMatch(value)) {
       return 'Invalid email address. ';
     }
@@ -27,7 +27,7 @@ class TValidator {
       return 'Password must be at least 6 characters long.';
     }
 // Check for uppercase letters
-    if (!value.contains(RegExp(r' [A-Z]'))) {
+    if (!value.contains(RegExp(r'[A-Z]'))) {
       return 'Password must contain at least one uppercase letter';
     }
 // Check for numbers
@@ -35,7 +35,7 @@ class TValidator {
       return 'Password must contain at least one number. ';
     }
 // Check for special characters
-    if (!value.contains(RegExp(r' [ ! @#$%^&* ( ), . ?": {} | <>] '))) {
+    if (!value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>\[\]\\\/]'))) {
       return 'Password must contain at least one special character. ';
     }
     return null;

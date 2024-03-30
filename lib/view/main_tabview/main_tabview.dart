@@ -9,7 +9,8 @@ import '../offer/offer_view.dart';
 import '../profile/profile_view.dart';
 
 class MainTabView extends StatefulWidget {
-  const MainTabView({super.key});
+  final String? userName;
+  const MainTabView({super.key, this.userName});
 
   @override
   State<MainTabView> createState() => _MainTabViewState();
@@ -19,6 +20,8 @@ class _MainTabViewState extends State<MainTabView> {
   int selctTab = 2;
   PageStorageBucket storageBucket = PageStorageBucket();
   Widget selectPageView = const HomeView();
+
+  set setUserName(String? userName){}
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +44,7 @@ class _MainTabViewState extends State<MainTabView> {
             }
           },
           shape: const CircleBorder(),
-          backgroundColor: selctTab == 2 ? TColor.primary : TColor.placeholder,
+          backgroundColor: selctTab == 2 ? Colors.purpleAccent : TColor.placeholder,
           child: Image.asset(
             "assets/img/tab_home.png",
             width: 30,

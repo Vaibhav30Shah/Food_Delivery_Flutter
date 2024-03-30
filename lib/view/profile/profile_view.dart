@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:food_delivery/authentication/authentication_helper.dart';
 import 'package:food_delivery/common_widget/round_button.dart';
+import 'package:food_delivery/view/login/login_view.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../common/color_extension.dart';
@@ -98,7 +100,7 @@ class _ProfileViewState extends State<ProfileView> {
               size: 12,
             ),
             label: Text(
-              "Edit Profile",
+              "Upload Image",
               style: TextStyle(color: TColor.primary, fontSize: 12),
             ),
           ),
@@ -110,7 +112,15 @@ class _ProfileViewState extends State<ProfileView> {
                 fontWeight: FontWeight.w700),
           ),
           TextButton(
-            onPressed: () {},
+              onPressed: () async {
+                await AuthenticationHelper().logout();
+                // Navigate back to the LoginView
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginView()),
+                      (route) => false,
+                );
+              },
             child: Text(
               "Sign Out",
               style: TextStyle(
