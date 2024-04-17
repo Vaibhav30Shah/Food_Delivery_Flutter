@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_geocoder/geocoder.dart';
 import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common_widget/round_textfield.dart';
+import 'package:food_delivery/view/menu/restaurant_menu.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../../common/globs.dart';
@@ -305,7 +306,9 @@ class _HomeViewState extends State<HomeView> {
                     var pObj = popArr[index] as Map? ?? {};
                     return PopularRestaurantRow(
                       pObj: pObj,
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> RestaurantMenu()));
+                      },
                     );
                   }),
                 ),
