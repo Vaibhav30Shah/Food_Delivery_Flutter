@@ -1,4 +1,6 @@
+import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 void main() {
@@ -20,38 +22,112 @@ class MyApp extends StatelessWidget {
 }
 
 class RestaurantMenu extends StatefulWidget {
+  final  restaurant;
+
+  const RestaurantMenu({Key? key, this.restaurant}) : super(key: key);
+
   @override
   _RestaurantMenuState createState() => _RestaurantMenuState();
 }
 
 class _RestaurantMenuState extends State<RestaurantMenu> {
+  List menuItems=[];
+  @override
+  void initState() {
+    super.initState();
+    fetchMenuItems();
+  }
+  Future<void> fetchMenuItems() async {
+    final restaurantId = widget.restaurant?['id'].toString();
+    final menuData = await loadMenuData(restaurantId);
+
+    menuItems = menuData.map((menuItem) {
+      return MenuItem(
+        name: menuItem['item'],
+        vegOrNonVeg: menuItem['veg_or_non_veg'],
+        price: menuItem['price'],
+      );
+    }).toList();
+
+    setState(() {});
+  }
+
+  Future<List<Map<String, dynamic>>> loadMenuData(String? restaurantId) async {
+    final menuRawData = await rootBundle.loadString('assets/csvs/menu.csv');
+    final foodRawData = await rootBundle.loadString('assets/csvs/food.csv');
+
+    List<List<dynamic>> menuListData =
+    const CsvToListConverter().convert(menuRawData);
+    List<List<dynamic>> foodListData =
+    const CsvToListConverter().convert(foodRawData);
+
+    List<String> menuHeaderRow = menuListData.first.cast<String>().toList();
+    List<String> foodHeaderRow = foodListData.first.cast<String>().toList();
+
+    List<Map<String, dynamic>> menuData = menuListData
+        .skip(1)
+        .map((row) => Map.fromIterables(
+      menuHeaderRow.map((header) => header.toString()),
+      row,
+    ))
+        .where((menuItem) => menuItem['r_id'] == restaurantId)
+        .toList();
+
+    List<Map<String, dynamic>> foodData = foodListData
+        .skip(1)
+        .map((row) => Map.fromIterables(
+      foodHeaderRow.map((header) => header.toString()),
+      row,
+    ))
+        .toList();
+
+    List<Map<String, dynamic>> menuItemData = [];
+
+    for (var menuItem in menuData) {
+      final foodId = menuItem['f_id'];
+      final foodItem = foodData.firstWhere(
+            (food) => food['f_id'] == foodId,
+        orElse: () => {},
+      );
+
+      if (foodItem.isNotEmpty) {
+        menuItemData.add({
+          'item': foodItem['item'],
+          'veg_or_non_veg': foodItem['veg_or_non_veg'],
+          'price': menuItem['price'],
+        });
+      }
+    }
+
+    return menuItemData;
+  }
   // List to store the menu items
-  List<MenuItem> menuItems = [
-    MenuItem(
-      name: 'Cheeseburger',
-      description: 'Juicy beef patty with melted cheddar cheese, lettuce, tomato, and onion on a toasted bun.',
-      price: 9.99,
-      image: 'assets/img/offer_1.png',
-    ),
-    MenuItem(
-      name: 'Chicken Salad',
-      description: 'Grilled chicken breast, mixed greens, cherry tomatoes, cucumbers, and a light balsamic vinaigrette.',
-      price: 12.50,
-      image: 'assets/img/offer_1.png',
-    ),
-    MenuItem(
-      name: 'Pasta Primavera',
-      description: 'Penne pasta tossed with sautéed vegetables in a garlic-infused olive oil sauce.',
-      price: 15.75,
-      image: 'assets/img/offer_1.png',
-    ),
-    MenuItem(
-      name: 'Vegetable Stir-Fry',
-      description: 'A medley of fresh vegetables stir-fried in a savory soy-based sauce, served over jasmine rice.',
-      price: 11.25,
-      image: 'assets/img/offer_1.png',
-    ),
-  ];
+  // List<MenuItem> menuItems = [
+  //   MenuItem(
+  //     name: 'Cheeseburger',
+  //     description: 'Juicy beef patty with melted cheddar cheese, lettuce, tomato, and onion on a toasted bun.',
+  //     price: 9.99,
+  //     image: 'assets/img/offer_1.png',
+  //   ),
+  //   MenuItem(
+  //     name: 'Chicken Salad',
+  //     description: 'Grilled chicken breast, mixed greens, cherry tomatoes, cucumbers, and a light balsamic vinaigrette.',
+  //     price: 12.50,
+  //     image: 'assets/img/offer_1.png',
+  //   ),
+  //   MenuItem(
+  //     name: 'Pasta Primavera',
+  //     description: 'Penne pasta tossed with sautéed vegetables in a garlic-infused olive oil sauce.',
+  //     price: 15.75,
+  //     image: 'assets/img/offer_1.png',
+  //   ),
+  //   MenuItem(
+  //     name: 'Vegetable Stir-Fry',
+  //     description: 'A medley of fresh vegetables stir-fried in a savory soy-based sauce, served over jasmine rice.',
+  //     price: 11.25,
+  //     image: 'assets/img/offer_1.png',
+  //   ),
+  // ];
 
   // List to store the user's cart items
   List<CartItem> cartItems = [];
@@ -245,7 +321,7 @@ class CartPage extends StatelessWidget {
                       bottomLeft: Radius.circular(16.0),
                     ),
                     child: Image.asset(
-                      item.item.image,
+                      "assets/img/menu_1.png",
                       width: 120.0,
                       height: 120.0,
                       fit: BoxFit.cover,
@@ -312,15 +388,13 @@ class CartPage extends StatelessWidget {
 
 class MenuItem {
   final String name;
-  final String description;
+  final String vegOrNonVeg;
   final double price;
-  final String image;
 
   MenuItem({
     required this.name,
-    required this.description,
+    required this.vegOrNonVeg,
     required this.price,
-    required this.image,
   });
 }
 

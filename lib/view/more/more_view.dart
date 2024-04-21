@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery/view/more/about_us_view.dart';
+import 'package:food_delivery/view/more/chat_screen.dart';
+import 'package:food_delivery/view/more/chatbot.dart';
 import 'package:food_delivery/view/more/inbox_view.dart';
 import 'package:food_delivery/view/more/payment_details_view.dart';
 
@@ -37,7 +39,7 @@ class _MoreViewState extends State<MoreView> {
     },
     {
       "index": "4",
-      "name": "Inbox",
+      "name": "Chat Assistance",
       "image": "assets/img/more_inbox.png",
       "base": 0
     },
@@ -132,13 +134,13 @@ class _MoreViewState extends State<MoreView> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => const InboxView()));
+                                    builder: (context) => ChatScreen()));
                             break;
                           case "5":
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => const AboutUsView()));
+                                    builder: (context) =>  AboutUsView()));
                             break;
                           case "6":
                             ServiceCall.logout();

@@ -7,13 +7,23 @@ class AuthenticationHelper {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   get user => _auth.currentUser;
 
+  Stream<User?> authStateChanges() => _auth.authStateChanges();
+
+
   //SIGN UP METHOD
-  Future signUp({required String email, required String password}) async {
+  Future signUp({required String email, required String password, required String name, required String mobile, required String address}) async {
     try {
       await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userName', name);
+      await prefs.setString('userEmail', email);
+      await prefs.setString('userMobile', mobile);
+      await prefs.setString('userAddress', address);
+
       return null;
     } on FirebaseAuthException catch (e) {
       return e.message;

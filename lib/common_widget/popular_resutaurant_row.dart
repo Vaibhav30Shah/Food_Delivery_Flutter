@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../common/color_extension.dart';
 
 class PopularRestaurantRow extends StatelessWidget {
-  final Map pObj;
+  final  pObj;
   final VoidCallback onTap;
   const PopularRestaurantRow({super.key, required this.pObj, required this.onTap});
 
@@ -17,7 +17,7 @@ class PopularRestaurantRow extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
              Image.asset(
-                pObj["image"].toString(),
+                "assets/img/img.png",
                 width: double.maxFinite,
                 height: 200,
                 fit: BoxFit.cover,
@@ -36,7 +36,7 @@ class PopularRestaurantRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      pObj["name"],
+                      pObj["name"] ?? '',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           color: TColor.primaryText,
@@ -62,7 +62,9 @@ class PopularRestaurantRow extends StatelessWidget {
                       ),
 
                       Text(
-                        pObj["rate"],
+                        pObj["rating"] != null
+                            ? "${pObj["rating"]}/5" // Get the rating from the CSV
+                            : "No ratings",
                         textAlign: TextAlign.center,
                         style: TextStyle(color: TColor.primary, fontSize: 11),
                       ),
@@ -70,7 +72,7 @@ class PopularRestaurantRow extends StatelessWidget {
                         width: 8,
                       ),
                       Text(
-                        "(${pObj["rating"]} Ratings)",
+                        "(${pObj["rating_count"] ?? "0"})",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             color: TColor.secondaryText, fontSize: 11),
@@ -81,7 +83,7 @@ class PopularRestaurantRow extends StatelessWidget {
                       ),
 
                         Text(
-                          pObj["type"],
+                          pObj["cuisine"],
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: TColor.secondaryText, fontSize: 11),
@@ -91,12 +93,12 @@ class PopularRestaurantRow extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: TextStyle(color: TColor.primary, fontSize: 11),
                         ),
-                        Text(
-                          pObj["food_type"],
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: TColor.secondaryText, fontSize: 12),
-                        ),
+                        // Text(
+                        //   pObj["food_type"],
+                        //   textAlign: TextAlign.center,
+                        //   style: TextStyle(
+                        //       color: TColor.secondaryText, fontSize: 12),
+                        // ),
                       ],
                     ),
                     

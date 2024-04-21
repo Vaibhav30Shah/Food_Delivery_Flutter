@@ -1,10 +1,17 @@
+import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_geocoder/geocoder.dart';
 import 'package:food_delivery/common/color_extension.dart';
+import 'package:food_delivery/common/db_helper.dart';
 import 'package:food_delivery/common_widget/round_textfield.dart';
+import 'package:food_delivery/models/restaurant_model.dart';
+import 'package:food_delivery/view/home/view_all_pop_restaurant.dart';
 import 'package:food_delivery/view/menu/restaurant_menu.dart';
 import 'package:geolocator/geolocator.dart';
-
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:sqflite/sqflite.dart';
 import '../../common/globs.dart';
 import '../../common/service_call.dart';
 import '../../common_widget/category_cell.dart';
@@ -15,17 +22,57 @@ import '../../common_widget/view_all_title_row.dart';
 import '../more/my_order_view.dart';
 
 class HomeView extends StatefulWidget {
-  const HomeView({super.key});
+  final String? userName;
+
+  const HomeView({super.key, this.userName});
 
   @override
   State<HomeView> createState() => _HomeViewState();
 }
 
 class _HomeViewState extends State<HomeView> {
+  TextEditingController txtName = TextEditingController();
   TextEditingController txtSearch = TextEditingController();
   Position? _currentPosition;
-  static String add="";
+  static String add = "";
   var first;
+
+  List<Map<String, dynamic>> _data = [];
+
+  Future<void> _loadCSV() async {
+    final _rawData = await rootBundle.loadString("assets/csvs/restaurant.csv");
+    List<List<dynamic>> _listData =
+        const CsvToListConverter().convert(_rawData);
+
+    List<String> headerRow = _listData.first.cast<String>().toList();
+
+    List<Map<String, dynamic>> restaurants = _listData
+        .skip(1) // Skip the header row
+        .map((row) => Map.fromIterables(
+              headerRow
+                  .map((header) => header.toString()), // Cast keys to String
+              row,
+            ))
+        // .where((restaurant) => restaurant['city'].contains(_userCity))
+        .toList();
+
+    setState(() {
+      _data = restaurants;
+    });
+    print("Data came");
+  }
+
+  // Future<List<Restaurant>> getRestaurants() async {
+  //   Database? db = await DatabaseHelper.instance.database;
+  //   List<Map<String, dynamic>> results = await db!.query('restaurants');
+  //
+  //   // Convert the list of maps into a list of Restaurant objects
+  //   List<Restaurant> restaurants = results.map((map) => Restaurant.fromMap(map)).toList();
+  //   return restaurants;
+  // }
+
+
+
   List catArr = [
     {"image": "assets/img/cat_offer.png", "name": "Offers"},
     {"image": "assets/img/cat_sri.png", "name": "South Indian"},
@@ -105,6 +152,30 @@ class _HomeViewState extends State<HomeView> {
       "food_type": "Western Food"
     },
   ];
+  String? _userCity;
+
+  Future<void> _getUserLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        Placemark placemark = placemarks.first;
+        String city = placemark.locality ?? '';
+        setState(() {
+          _userCity = city;
+        });
+      }
+    } catch (e) {
+      print('Error getting user location: $e');
+    }
+  }
 
   Future<Position> getCurrentLocation() async {
     LocationPermission permission = await Geolocator.checkPermission();
@@ -121,22 +192,24 @@ class _HomeViewState extends State<HomeView> {
   void initState() {
     super.initState();
     _fetchLocation();
+    _getUserLocation();
+    _loadCSV();
+    txtName.text = widget.userName ?? '';
   }
 
   void _fetchLocation() async {
     Position position = await getCurrentLocation();
-    final coordinates= new Coordinates(position.latitude,position.longitude);
-    var address=await Geocoder.local.findAddressesFromCoordinates(coordinates);
-    var first=address.first;
-    add=first.addressLine.toString();
-  print(add);
+    final coordinates = new Coordinates(position.latitude, position.longitude);
+    var address =
+        await Geocoder.local.findAddressesFromCoordinates(coordinates);
+    var first = address.first;
+    add = first.addressLine.toString();
+    print(add);
     setState(() {
       _currentPosition = position;
     });
-    print(_currentPosition!.latitude+_currentPosition!.longitude);
-
+    print(_currentPosition!.latitude + _currentPosition!.longitude);
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -144,15 +217,15 @@ class _HomeViewState extends State<HomeView> {
     bool isValentinesDay = now.month == 2 && now.day == 14;
     bool isHoli = now.month == 2 && now.day == 28;
 
-    String greet="";
-    var time=now.hour;
+    String greet = "";
+    var time = now.hour;
     print(time);
-    if(time>=6 && time<12)
-      greet="Morning";
-    else if(time>12 && time<=17)
-      greet="Afternoon";
+    if (time >= 6 && time < 12)
+      greet = "Morning";
+    else if (time > 12 && time <= 17)
+      greet = "Afternoon";
     else
-      greet="Evening";
+      greet = "Evening";
 
     Color backgroundColor;
     if (isValentinesDay) {
@@ -162,12 +235,19 @@ class _HomeViewState extends State<HomeView> {
     } else {
       backgroundColor = Colors.purple.withOpacity(0.5);
     }
+
+    if (_userCity == null) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(colors: [backgroundColor,Colors.white],
-            begin: Alignment.topLeft
-          ),
+          gradient: LinearGradient(
+              colors: [backgroundColor, Colors.white],
+              begin: Alignment.topLeft),
         ),
         child: SingleChildScrollView(
           child: Padding(
@@ -184,15 +264,18 @@ class _HomeViewState extends State<HomeView> {
                     children: [
                       Column(
                         children: [
-                          Text(
-                            "Good $greet ${ServiceCall.userPayload[KKey.name] ?? ""}!",
-                            // "Good $greet ${Widget.userName} ?? ""}!",
-                            style: TextStyle(
-                                color: TColor.primaryText,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800),
+                          Container(
+                            width: 300,
+                            child: Text(
+                              "Good $greet ${ServiceCall.userPayload[KKey.name] ?? ""}${txtName.text} !",
+                              // "Good $greet ${Widget.userName} ?? ""}!",
+                              style: TextStyle(
+                                  overflow: TextOverflow.ellipsis,
+                                  color: TColor.primaryText,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800),
+                            ),
                           ),
-
                         ],
                       ),
                       IconButton(
@@ -221,8 +304,8 @@ class _HomeViewState extends State<HomeView> {
                     children: [
                       Text(
                         "Delivering to",
-                        style:
-                            TextStyle(color: TColor.secondaryText, fontSize: 11),
+                        style: TextStyle(
+                            color: TColor.secondaryText, fontSize: 11),
                       ),
                       const SizedBox(
                         height: 6,
@@ -232,7 +315,7 @@ class _HomeViewState extends State<HomeView> {
                         children: [
                           Expanded(
                             child: Text(
-                             add.toString(),
+                              add.toString(),
                               style: TextStyle(
                                   color: TColor.primaryText,
                                   overflow: TextOverflow.visible,
@@ -243,11 +326,11 @@ class _HomeViewState extends State<HomeView> {
                           const SizedBox(
                             width: 25,
                           ),
-                          Image.asset(
-                            "assets/img/dropdown.png",
-                            width: 12,
-                            height: 12,
-                          )
+                          // Image.asset(
+                          //   "assets/img/dropdown.png",
+                          //   width: 12,
+                          //   height: 12,
+                          // )
                         ],
                       )
                     ],
@@ -285,7 +368,9 @@ class _HomeViewState extends State<HomeView> {
                       var cObj = catArr[index] as Map? ?? {};
                       return CategoryCell(
                         cObj: cObj,
-                        onTap: () {},
+                        onTap: () {
+
+                        },
                       );
                     }),
                   ),
@@ -294,20 +379,25 @@ class _HomeViewState extends State<HomeView> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: ViewAllTitleRow(
                     title: "Popular Restaurants",
-                    onView: () {},
+                    onView: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context)=>ViewAllPopularRestaurants(data: _data)));
+                    },
                   ),
                 ),
                 ListView.builder(
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
                   padding: EdgeInsets.zero,
-                  itemCount: popArr.length,
+                  itemCount: _data.length > 5 ? 5 : _data.length,
                   itemBuilder: ((context, index) {
-                    var pObj = popArr[index] as Map? ?? {};
+                    var pObj = _data[index];
                     return PopularRestaurantRow(
                       pObj: pObj,
                       onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=> RestaurantMenu()));
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => RestaurantMenu(restaurant: pObj)));
                       },
                     );
                   }),

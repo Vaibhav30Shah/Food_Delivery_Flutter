@@ -1,12 +1,18 @@
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:food_delivery/authentication/authentication_helper.dart';
 import 'package:food_delivery/bindings/general_bindings.dart';
 import 'package:food_delivery/common/color_extension.dart';
+import 'package:food_delivery/common/db_helper.dart';
 import 'package:food_delivery/common/locator.dart';
 import 'package:food_delivery/common/service_call.dart';
+import 'package:food_delivery/view/login/login_view.dart';
 import 'package:food_delivery/view/login/welcome_view.dart';
 import 'package:food_delivery/view/main_tabview/main_tabview.dart';
 import 'package:food_delivery/view/on_boarding/startup_view.dart';
@@ -23,15 +29,43 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   prefs = await SharedPreferences.getInstance();
   WidgetsFlutterBinding.ensureInitialized();
+  // await dotenv.load(fileName: ".env");
   await Firebase.initializeApp();
 
   if(Globs.udValueBool(Globs.userLogin)) {
     ServiceCall.userPayload = Globs.udValue(Globs.userPayload);
   }
 
-  runApp( const MyApp(defaultHome:  StartupView(),));
+  DatabaseHelper.instance.database.then((_) {
+    insertDataFromCSV();
+  });
+
+  // runApp( const MyApp(defaultHome:  StartupView(),));
+  runApp(StreamBuilder<User?>(
+    stream: AuthenticationHelper().authStateChanges(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const CircularProgressIndicator();
+      } else if (snapshot.hasError) {
+        return const Center(
+          child: Text('Error initializing Firebase'),
+        );
+      } else if (snapshot.hasData) {
+        return MyApp(defaultHome: MainTabView(userName: "User"));
+      } else {
+        return MyApp(defaultHome: LoginView());
+      }
+    },
+  ));
 }
 
+void insertDataFromCSV() async {
+  String csvString = await rootBundle.loadString('assets/csvs/restaurant.csv');
+  String csvFilePath = "assets/csvs/restaurant.csv";
+
+  await DatabaseHelper.instance.insertFromCSV(csvString);
+  print('Data inserted successfully from CSV.');
+}
 void configLoading() {
   EasyLoading.instance
     ..indicatorType = EasyLoadingIndicatorType.ring
@@ -125,3 +159,4 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
+

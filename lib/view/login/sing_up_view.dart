@@ -12,6 +12,7 @@ import 'package:food_delivery/view/login/login_view.dart';
 import 'package:food_delivery/view/main_tabview/main_tabview.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../common/globs.dart';
 import '../../common/service_call.dart';
@@ -185,12 +186,22 @@ class _SignUpViewState extends State<SignUpView> {
                         if (txtEmail.text.isNotEmpty &&
                             txtPassword.text.isNotEmpty) {
                           // Email and password are not empty, proceed with sign up
-                          AuthenticationHelper()
-                              .signUp(
-                                  email: txtEmail.text,
-                                  password: txtPassword.text)
+                          AuthenticationHelper().signUp(
+                              email: txtEmail.text,
+                              password: txtPassword.text,
+                              name: txtName.text,
+                              mobile: txtMobile.text,
+                              address: txtAddress.text)
                               .then((result) {
                             if (result == null) {
+                              // Store user details in SharedPreferences
+                              SharedPreferences.getInstance().then((prefs) {
+                                prefs.setString('userName', txtName.text);
+                                prefs.setString('userEmail', txtEmail.text);
+                                prefs.setString('userMobile', txtMobile.text);
+                                prefs.setString('userAddress', txtAddress.text);
+                              });
+
                               Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(

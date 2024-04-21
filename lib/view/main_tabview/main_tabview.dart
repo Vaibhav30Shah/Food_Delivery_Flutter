@@ -10,8 +10,16 @@ import '../profile/profile_view.dart';
 
 class MainTabView extends StatefulWidget {
   final String? userName;
-  const MainTabView({super.key, this.userName});
-
+  final String? userEmail;
+  final String? userMobile;
+  final String? userAddress;
+  const MainTabView({
+    super.key,
+    this.userName,
+    this.userEmail,
+    this.userMobile,
+    this.userAddress,
+  });
   @override
   State<MainTabView> createState() => _MainTabViewState();
 }
@@ -22,6 +30,21 @@ class _MainTabViewState extends State<MainTabView> {
   Widget selectPageView = const HomeView();
 
   set setUserName(String? userName){}
+
+  void navigateToProfileView() {
+    if (selctTab != 3) {
+      selctTab = 3;
+      selectPageView = ProfileView(
+        userEmail: widget.userEmail,
+        userMobile: widget.userMobile,
+        userAddress: widget.userAddress,
+        userName: widget.userName,
+      );
+    }
+    if (mounted) {
+      setState(() {});
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +60,7 @@ class _MainTabViewState extends State<MainTabView> {
           onPressed: () {
             if (selctTab != 2) {
               selctTab = 2;
-              selectPageView = const HomeView();
+              selectPageView = HomeView(userName: widget.userName);
             }
             if (mounted) {
               setState(() {});
@@ -92,20 +115,13 @@ class _MainTabViewState extends State<MainTabView> {
         
         
                 const  SizedBox(width: 40, height: 40, ),
-        
-              TabButton(
-                  title: "Profile",
-                  icon: "assets/img/tab_profile.png",
-                  onTap: () {
-                    if (selctTab != 3) {
-                      selctTab = 3;
-                      selectPageView = const ProfileView();
-                    }
-                    if (mounted) {
-                      setState(() {});
-                    }
-                  },
-                  isSelected: selctTab == 3),
+
+            TabButton(
+              title: "Profile",
+              icon: "assets/img/tab_profile.png",
+              onTap: navigateToProfileView,
+              isSelected: selctTab == 3,
+            ),
               TabButton(
                   title: "More",
                   icon: "assets/img/tab_more.png",

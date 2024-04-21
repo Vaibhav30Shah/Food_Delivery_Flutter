@@ -11,7 +11,19 @@ import '../../common_widget/round_textfield.dart';
 import '../more/my_order_view.dart';
 
 class ProfileView extends StatefulWidget {
-  const ProfileView({super.key});
+  final String? userEmail;
+  final String? userMobile;
+  final String? userAddress;
+  final String? userName;
+
+  const ProfileView({
+    super.key,
+    this.userEmail,
+    this.userMobile,
+    this.userAddress,
+    this.userName,
+  });
+
 
   @override
   State<ProfileView> createState() => _ProfileViewState();
@@ -27,6 +39,15 @@ class _ProfileViewState extends State<ProfileView> {
   TextEditingController txtAddress = TextEditingController();
   TextEditingController txtPassword = TextEditingController();
   TextEditingController txtConfirmPassword = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    txtEmail.text = widget.userEmail ?? '';
+    txtMobile.text = widget.userMobile ?? '';
+    txtAddress.text = widget.userAddress ?? '';
+    txtName.text = widget.userName ?? '';
+  }
 
   @override
   Widget build(BuildContext context) {

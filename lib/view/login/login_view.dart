@@ -39,10 +39,11 @@ class _LoginViewState extends State<LoginView> {
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
 
-    Future<void> storeUserData(String userId, String userName) async {
+    Future<void> storeUserData(String userId, String userName, String userEmail) async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('userId', userId);
       await prefs.setString('userName', userName);
+      await prefs.setString('userEmail', userEmail);
     }
 
     return Scaffold(
@@ -144,9 +145,26 @@ class _LoginViewState extends State<LoginView> {
                           if (result == null) {
                             String userId = authHelper.user?.uid; // Get the user ID from Firebase Authentication
                             String userName = txtEmail.text.split('@')[0];
-                            storeUserData(userId, userName);
-                            Navigator.pushReplacement(context,
-                                MaterialPageRoute(builder: (context) => MainTabView(userName: userName,)));
+                            String userEmail = txtEmail.text;
+
+                            // Retrieve user details from SharedPreferences
+                            SharedPreferences.getInstance().then((prefs) {
+                              String name=prefs.getString('userName') ?? '';
+                              String userMobile = prefs.getString('userMobile') ?? '';
+                              String userAddress = prefs.getString('userAddress') ?? '';
+
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MainTabView(
+                                    userName: name,
+                                    userEmail: userEmail,
+                                    userMobile: userMobile,
+                                    userAddress: userAddress,
+                                  ),
+                                ),
+                              );
+                            });
                           } else {
                             // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             //   content: Text(
