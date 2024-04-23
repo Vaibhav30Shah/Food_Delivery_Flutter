@@ -1,25 +1,73 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common_widget/round_icon_button.dart';
 import 'package:food_delivery/view/more/add_card_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../common_widget/round_button.dart';
 import 'my_order_view.dart';
 
 class PaymentDetailsView extends StatefulWidget {
-  const PaymentDetailsView({super.key});
+  final Function(Map<String, String>)? addNewCard;
+
+  const PaymentDetailsView({super.key, this.addNewCard});
 
   @override
   State<PaymentDetailsView> createState() => _PaymentDetailsViewState();
 }
 
 class _PaymentDetailsViewState extends State<PaymentDetailsView> {
+ @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getCardsFromSharedPreferences();
+  }
+
   List cardArr = [
     {
       "icon": "assets/img/visa_icon.png",
       "card": "**** **** **** 2187",
+      "lastFour": "2187"
     }
   ];
+
+  Future<void> saveCardToSharedPreferences(Map<String, String> cardDetails) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cardList = prefs.getStringList('cards') ?? [];
+    cardList.add(jsonEncode(cardDetails));
+    await prefs.setStringList('cards', cardList);
+  }
+
+  void addNewCard(Map<String, String> cardDetails) {
+    setState(() {
+      String cardNumber = cardDetails["card"]!;
+      String lastFour = cardNumber.substring(cardNumber.length - 4);
+      cardArr.add({
+        "icon": cardDetails["icon"],
+        "card": cardNumber,
+        "lastFour": lastFour
+      });
+    });
+    widget.addNewCard!(cardDetails);
+    saveCardToSharedPreferences(cardDetails);
+  }
+
+  void removeCard(int index) {
+    setState(() {
+      cardArr.removeAt(index);
+    });
+  }
+
+  Future<void> getCardsFromSharedPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cardList = prefs.getStringList('cards') ?? [];
+    setState(() {
+      cardArr = cardList.map((card) => jsonDecode(card)).toList().cast<Map<String, String>>();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +106,7 @@ class _PaymentDetailsViewState extends State<PaymentDetailsView> {
                     ),
                     IconButton(
                       onPressed: () {
-                         Navigator.push(
+                        Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) => const MyOrderView()));
@@ -155,11 +203,12 @@ class _PaymentDetailsViewState extends State<PaymentDetailsView> {
                               ),
                               Expanded(
                                 child: Text(
-                                  cObj["card"].toString(),
+                                  "**** **** **** ${cObj["lastFour"].toString()}",
                                   style: TextStyle(
-                                      color: TColor.secondaryText,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600),
+                                    color: TColor.secondaryText,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                               SizedBox(
@@ -168,7 +217,9 @@ class _PaymentDetailsViewState extends State<PaymentDetailsView> {
                                 child: RoundButton(
                                   title: 'Delete Card',
                                   fontSize: 12,
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    removeCard(index);
+                                  },
                                   type: RoundButtonType.textPrimary,
                                 ),
                               )
@@ -218,12 +269,18 @@ class _PaymentDetailsViewState extends State<PaymentDetailsView> {
                     fontSize: 16,
                     onPressed: () {
                       showModalBottomSheet(
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
                           context: context,
                           builder: (context) {
                             return const AddCardView();
+                          }).then((newCardDetails) {
+                        if (newCardDetails != null) {
+                          setState(() {
+                            cardArr.add(newCardDetails);
                           });
+                        }
+                      });
                       // Navigator.push(context, MaterialPageRoute(builder: (context) => const AddCardView() ));
                     }),
               ),

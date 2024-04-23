@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:food_delivery/view/login/login_view.dart';
 import 'package:food_delivery/view/more/about_us_view.dart';
-import 'package:food_delivery/view/more/chat_screen.dart';
 import 'package:food_delivery/view/more/chatbot.dart';
 import 'package:food_delivery/view/more/inbox_view.dart';
+import 'package:food_delivery/view/more/chatbase.dart';
 import 'package:food_delivery/view/more/payment_details_view.dart';
 
 import '../../common/color_extension.dart';
@@ -134,7 +135,7 @@ class _MoreViewState extends State<MoreView> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => ChatScreen()));
+                                    builder: (context) => ChatbotScreen()));
                             break;
                           case "5":
                             Navigator.push(
@@ -143,7 +144,10 @@ class _MoreViewState extends State<MoreView> {
                                     builder: (context) =>  AboutUsView()));
                             break;
                           case "6":
-                            ServiceCall.logout();
+                            Navigator.pop(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>  LoginView()));
                             break;
 
                           default:

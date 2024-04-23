@@ -1,24 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common_widget/round_button.dart';
+import 'package:food_delivery/view/more/add_notes_modal.dart';
 
 import 'checkout_view.dart';
 
 class MyOrderView extends StatefulWidget {
-  const MyOrderView({super.key});
+  final List? itemArr;
+  final restArr;
+  const MyOrderView({super.key, this.itemArr, this.restArr});
 
   @override
   State<MyOrderView> createState() => _MyOrderViewState();
 }
 
 class _MyOrderViewState extends State<MyOrderView> {
-  List itemArr = [
-    {"name": "Beef Burger", "qty": "1", "price": 16.0},
-    {"name": "Classic Burger", "qty": "1", "price": 14.0},
-    {"name": "Cheese Chicken Burger", "qty": "1", "price": 17.0},
-    {"name": "Chicken Legs Basket", "qty": "1", "price": 15.0},
-    {"name": "French Fires Large", "qty": "1", "price": 6.0}
-  ];
+  String? deliveryInstruction;
+  // List itemArr = [
+  //   {"name": "Beef Burger", "qty": "1", "price": 16.0},
+  //   {"name": "Classic Burger", "qty": "1", "price": 14.0},
+  //   {"name": "Cheese Chicken Burger", "qty": "1", "price": 17.0},
+  //   {"name": "Chicken Legs Basket", "qty": "1", "price": 15.0},
+  //   {"name": "French Fires Large", "qty": "1", "price": 6.0}
+  // ];
+
+  double calculateSubTotalPrice(List itemArr) {
+    double totalPrice = 0.0;
+    for (var item in itemArr) {
+      final price = double.parse(item['price'].toString());
+      final qty = int.parse(item['qty'].toString());
+      totalPrice += price * qty;
+    }
+    return totalPrice;
+  }
+
+  double calculateTotalPrice(List itemArr) {
+    double totalPrice = 0.0;
+    for (var item in itemArr) {
+      final price = double.parse(item['price'].toString());
+      final qty = int.parse(item['qty'].toString());
+      totalPrice += price * qty;
+    }
+    totalPrice+=20;
+    return totalPrice;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +105,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "King Burgers",
+                            "${widget.restArr['name']}",
                             textAlign: TextAlign.center,
                             style: TextStyle(
                                 color: TColor.primaryText,
@@ -103,7 +128,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                                 width: 4,
                               ),
                               Text(
-                                "4.9",
+                                "${widget.restArr['rating']}",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: TColor.primary, fontSize: 12),
@@ -112,7 +137,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                                 width: 8,
                               ),
                               Text(
-                                "(124 Ratings)",
+                                "(${widget.restArr['rating_count']})",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: TColor.secondaryText, fontSize: 12),
@@ -126,19 +151,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               Text(
-                                "Burger",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: TColor.secondaryText, fontSize: 12),
-                              ),
-                              Text(
-                                " . ",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: TColor.primary, fontSize: 12),
-                              ),
-                              Text(
-                                "Western Food",
+                                "${widget.restArr['cuisine']}",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: TColor.secondaryText, fontSize: 12),
@@ -150,19 +163,21 @@ class _MyOrderViewState extends State<MyOrderView> {
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Image.asset(
                                 "assets/img/location-pin.png",
                                 width: 13,
                                 height: 13,
                                 fit: BoxFit.contain,
+                                // alignment: Alignment.topLeft,
                               ),
                               const SizedBox(
                                 width: 4,
                               ),
                               Expanded(
                                 child: Text(
-                                  "No 03, 4th Lane, Newyork",
+                                  "${widget.restArr['address']}",
                                   textAlign: TextAlign.left,
                                   style: TextStyle(
                                       color: TColor.secondaryText,
@@ -186,7 +201,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
                   padding: EdgeInsets.zero,
-                  itemCount: itemArr.length,
+                  itemCount: widget.itemArr!.length,
                   separatorBuilder: ((context, index) => Divider(
                         indent: 25,
                         endIndent: 25,
@@ -194,7 +209,10 @@ class _MyOrderViewState extends State<MyOrderView> {
                         height: 1,
                       )),
                   itemBuilder: ((context, index) {
-                    var cObj = itemArr[index] as Map? ?? {};
+                    var cObj = widget.itemArr?[index] as Map? ?? {};
+                    final price = double.parse(cObj['price'].toString());
+                    final qty = int.parse(cObj['qty'].toString());
+                    final itemTotal = price * qty;
                     return Container(
                       padding: const EdgeInsets.symmetric(
                           vertical: 15, horizontal: 25),
@@ -214,7 +232,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                             width: 15,
                           ),
                           Text(
-                            "\$${cObj["price"].toString()}",
+                            "₹ ${itemTotal.toStringAsFixed(0)}",
                             style: TextStyle(
                                 color: TColor.primaryText,
                                 fontSize: 13,
@@ -243,7 +261,21 @@ class _MyOrderViewState extends State<MyOrderView> {
                               fontWeight: FontWeight.w700),
                         ),
                         TextButton.icon(
-                          onPressed: () {},
+                          onPressed: () {
+                            showModalBottomSheet(
+                              showDragHandle: true,
+                              shape: BeveledRectangleBorder(),
+                              context: context,
+                              // isScrollControlled: true,
+                              builder: (context) => AddNotesModal(
+                                onSave: (instructions) {
+                                  setState(() {
+                                    deliveryInstruction = instructions;
+                                  });
+                                },
+                              ),
+                            );
+                          },
                           icon: Icon(Icons.add, color: TColor.primary),
                           label: Text(
                             "Add Notes",
@@ -255,6 +287,17 @@ class _MyOrderViewState extends State<MyOrderView> {
                         )
                       ],
                     ),
+                    if (deliveryInstruction != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text(
+                          'Delivery Instructions: $deliveryInstruction',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
                     Divider(
                       color: TColor.secondaryText.withOpacity(0.5),
                       height: 1,
@@ -274,7 +317,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                               fontWeight: FontWeight.w700),
                         ),
                         Text(
-                          "\$68",
+                          "₹ ${calculateSubTotalPrice(widget.itemArr!).toStringAsFixed(0)}",
                           style: TextStyle(
                               color: TColor.primary,
                               fontSize: 13,
@@ -297,7 +340,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                               fontWeight: FontWeight.w700),
                         ),
                         Text(
-                          "\$2",
+                          "₹ 20",
                           style: TextStyle(
                               color: TColor.primary,
                               fontSize: 13,
@@ -327,7 +370,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                               fontWeight: FontWeight.w700),
                         ),
                         Text(
-                          "\$70",
+                          "₹ ${calculateTotalPrice(widget.itemArr!).toStringAsFixed(2)}",
                           style: TextStyle(
                               color: TColor.primary,
                               fontSize: 22,

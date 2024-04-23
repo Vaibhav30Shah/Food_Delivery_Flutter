@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common_widget/round_icon_button.dart';
 import 'package:food_delivery/common_widget/round_textfield.dart';
+import 'package:food_delivery/view/more/payment_details_view.dart';
 
 class AddCardView extends StatefulWidget {
-  const AddCardView({super.key});
+  final Function(Map<String, String>)? addNewCard;
+
+  const AddCardView({super.key, this.addNewCard});
 
   @override
   State<AddCardView> createState() => _AddCardViewState();
@@ -151,7 +154,18 @@ class _AddCardViewState extends State<AddCardView> {
                 color: TColor.primary,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                onPressed: () {}),
+                onPressed: () {
+                  String cardNumber = txtCardNumber.text;
+                  String lastFour = cardNumber.substring(cardNumber.length - 4);
+                  Map<String, String> newCardDetails = {
+                    "icon": "assets/img/visa_icon.png",
+                    "card": cardNumber,
+                    "lastFour": lastFour
+                  };
+
+                  Navigator.pop(context, newCardDetails);
+
+                }),
             const SizedBox(
               height: 25,
             ),

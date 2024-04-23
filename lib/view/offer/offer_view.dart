@@ -1,4 +1,6 @@
+import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common_widget/round_button.dart';
 
@@ -14,6 +16,31 @@ class OfferView extends StatefulWidget {
 
 class _OfferViewState extends State<OfferView> {
   TextEditingController txtSearch = TextEditingController();
+
+  List<Map<String, dynamic>> _data = [];
+
+  Future<void> _loadCSV() async {
+    final _rawData = await rootBundle.loadString("assets/csvs/restaurant.csv");
+    List<List<dynamic>> _listData =
+    const CsvToListConverter().convert(_rawData);
+
+    List<String> headerRow = _listData.first.cast<String>().toList();
+
+    List<Map<String, dynamic>> restaurants = _listData
+        .skip(1) // Skip the header row
+        .map((row) => Map.fromIterables(
+      headerRow
+          .map((header) => header.toString()), // Cast keys to String
+      row,
+    ))
+    // .where((restaurant) => restaurant['city'].contains(_userCity))
+        .toList();
+
+    setState(() {
+      _data = restaurants;
+    });
+    print("Data came");
+  }
 
   List offerArr = [
     {
@@ -139,9 +166,9 @@ class _OfferViewState extends State<OfferView> {
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
                 padding: EdgeInsets.zero,
-                itemCount: offerArr.length,
+                itemCount: _data.length,
                 itemBuilder: ((context, index) {
-                  var pObj = offerArr[index] as Map? ?? {};
+                  var pObj = _data[index] as Map? ?? {};
                   return PopularRestaurantRow(
                     pObj: pObj,
                     onTap: () {},

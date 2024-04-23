@@ -40,7 +40,8 @@ void main() async {
     insertDataFromCSV();
   });
 
-  // runApp( const MyApp(defaultHome:  StartupView(),));
+  // runApp(MyApp(defaultHome:  StartupView(),));
+  String? userName = await getUserName();
   runApp(StreamBuilder<User?>(
     stream: AuthenticationHelper().authStateChanges(),
     builder: (context, snapshot) {
@@ -51,13 +52,19 @@ void main() async {
           child: Text('Error initializing Firebase'),
         );
       } else if (snapshot.hasData) {
-        return MyApp(defaultHome: MainTabView(userName: "User"));
+        return MyApp(defaultHome: MainTabView(userName: userName));
       } else {
         return MyApp(defaultHome: LoginView());
       }
     },
   ));
 }
+
+Future<String?> getUserName() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString('name');
+}
+
 
 void insertDataFromCSV() async {
   String csvString = await rootBundle.loadString('assets/csvs/restaurant.csv');

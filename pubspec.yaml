@@ -68,6 +68,8 @@ dependencies:
   velocity_x: ^4.1.2
   chat_gpt_sdk: ^2.2.5
   flutter_dotenv: ^5.1.0
+  dash_chat_2: ^0.0.20
+  webview_flutter: ^4.5.0
 
 dev_dependencies:
   flutter_test:

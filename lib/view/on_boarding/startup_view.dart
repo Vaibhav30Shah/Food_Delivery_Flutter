@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:food_delivery/authentication/authentication_helper.dart';
 import 'package:food_delivery/view/login/login_view.dart';
@@ -39,21 +40,46 @@ class _StarupViewState extends State<StartupView> {
   }
 
   void checkLoginStatus() async {
-    bool isLogIn = await isLoggedIn();
     String? userName = await getUserName();
-    if (isLogIn) {
-      // User is logged in, navigate to MainTabView
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MainTabView(userName: userName ?? 'User')),
-      );
-    } else {
-      // User is not logged in, navigate to LoginView
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginView()),
-      );
-    }
+    StreamBuilder<User?>(
+      stream: AuthenticationHelper().authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return const Center(
+            child: Text('Error initializing Firebase'),
+          );
+        } else if (snapshot.hasData) {
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => MainTabView(
+                        userName: userName,
+                      )));
+          return Center();
+        } else {
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => LoginView()));
+          return Center();
+        }
+      },
+    );
+    // bool isLogIn = await isLoggedIn();
+    // String? userName = await getUserName();
+    // if (isLogIn) {
+    //   // User is logged in, navigate to MainTabView
+    //   Navigator.pushReplacement(
+    //     context,
+    //     MaterialPageRoute(builder: (context) => MainTabView(userName: userName ?? 'User')),
+    //   );
+    // } else {
+    //   // User is not logged in, navigate to LoginView
+    //   Navigator.pushReplacement(
+    //     context,
+    //     MaterialPageRoute(builder: (context) => LoginView()),
+    //   );
+    // }
   }
 
   Future<bool> isLoggedIn() async {
@@ -72,7 +98,7 @@ class _StarupViewState extends State<StartupView> {
 
   Future<String?> getUserName() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString('userName');
+    return prefs.getString('name');
   }
 
   @override
@@ -102,7 +128,9 @@ class _StarupViewState extends State<StartupView> {
                   future: isLoggedIn(),
                   builder: (context, snapshot) {
                     if (snapshot.hasData && snapshot.data!) {
-                      return MainTabView(userName: getUserName().toString() ?? 'User'); // User is logged in
+                      return MainTabView(
+                          userName: getUserName().toString() ??
+                              'User'); // User is logged in
                     } else {
                       return SignUpView(); // User is not logged in
                     }
