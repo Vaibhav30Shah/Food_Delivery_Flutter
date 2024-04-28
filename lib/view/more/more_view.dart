@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:food_delivery/authentication/authentication_helper.dart';
 import 'package:food_delivery/view/login/login_view.dart';
 import 'package:food_delivery/view/more/about_us_view.dart';
 import 'package:food_delivery/view/more/chatbot.dart';
 import 'package:food_delivery/view/more/inbox_view.dart';
 import 'package:food_delivery/view/more/chatbase.dart';
+import 'package:food_delivery/view/more/order_history.dart';
 import 'package:food_delivery/view/more/payment_details_view.dart';
 
 import '../../common/color_extension.dart';
@@ -82,19 +84,19 @@ class _MoreViewState extends State<MoreView> {
                           fontSize: 20,
                           fontWeight: FontWeight.w800),
                     ),
-                    IconButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const MyOrderView()));
-                      },
-                      icon: Image.asset(
-                        "assets/img/shopping_cart.png",
-                        width: 25,
-                        height: 25,
-                      ),
-                    ),
+                    // IconButton(
+                    //   onPressed: () {
+                    //     Navigator.push(
+                    //         context,
+                    //         MaterialPageRoute(
+                    //             builder: (context) => const MyOrderView()));
+                    //   },
+                    //   icon: Image.asset(
+                    //     "assets/img/shopping_cart.png",
+                    //     width: 25,
+                    //     height: 25,
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
@@ -122,7 +124,7 @@ class _MoreViewState extends State<MoreView> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => const MyOrderView()));
+                                    builder: (context) => const OrderHistory()));
                             break;
                           case "3":
                             Navigator.push(
@@ -144,10 +146,13 @@ class _MoreViewState extends State<MoreView> {
                                     builder: (context) =>  AboutUsView()));
                             break;
                           case "6":
-                            Navigator.pop(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>  LoginView()));
+                             AuthenticationHelper().logout();
+                            // Navigate back to the LoginView
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(builder: (context) => LoginView()),
+                                  (route) => false,
+                            );
                             break;
 
                           default:
@@ -204,10 +209,10 @@ class _MoreViewState extends State<MoreView> {
                                       decoration: BoxDecoration(
                                           color: Colors.red,
                                           borderRadius:
-                                              BorderRadius.circular(12.5)),
+                                              BorderRadius.circular(25.5)),
                                       alignment: Alignment.center,
                                       child: Text(
-                                        countBase.toString(),
+                                        " 8 ",
                                         style: TextStyle(
                                             color: TColor.white,
                                             fontSize: 12,

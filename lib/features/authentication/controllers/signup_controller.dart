@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:food_delivery/common/TFullScreenLoader.dart';
 import 'package:food_delivery/common/loaders.dart';
 import 'package:food_delivery/common/network_manager.dart';

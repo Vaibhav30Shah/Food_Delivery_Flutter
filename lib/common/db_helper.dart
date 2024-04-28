@@ -48,7 +48,7 @@ class DatabaseHelper {
   }
 
   Future<void> insertFromCSV(String csvFilePath) async {
-    Database? db = await instance.database!;
+    Database? db = await instance.database;
     String csvString = await File(csvFilePath).readAsString();
     List<List<dynamic>> csvTable = CsvToListConverter().convert(csvString);
 

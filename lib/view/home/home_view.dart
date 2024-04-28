@@ -1,7 +1,12 @@
+import 'dart:convert';
+
 import 'package:csv/csv.dart';
+import 'package:food_delivery/view/home/cuisine_wise_restaurants.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_geocoder/geocoder.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:food_delivery/common/color_extension.dart';
 import 'package:food_delivery/common/db_helper.dart';
 import 'package:food_delivery/common_widget/round_textfield.dart';
@@ -37,6 +42,10 @@ class _HomeViewState extends State<HomeView> {
   static String add = "";
   var first;
 
+  List imgs=[
+    {},
+  ];
+
   List<Map<String, dynamic>> _data = [];
 
   Future<void> _loadCSV() async {
@@ -71,59 +80,17 @@ class _HomeViewState extends State<HomeView> {
   //   return restaurants;
   // }
 
-
-
   List catArr = [
-    {"image": "assets/img/cat_offer.png", "name": "Offers"},
+    {"image": "assets/img/cuisines/gujarati.jpg", "name": "Gujarati"},
+    {"image": "assets/img/cat_offer.png", "name": "Mexican"},
     {"image": "assets/img/cat_sri.png", "name": "South Indian"},
     {"image": "assets/img/cat_3.png", "name": "Italian"},
+    {"image": "assets/img/cuisines/thali.jpg", "name": "Thali"},
     {"image": "assets/img/cat_4.png", "name": "North Indian"},
-  ];
-
-  List popArr = [
-    {
-      "image": "assets/img/res_1.png",
-      "name": "Dominoz Pizza",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafa",
-      "food_type": "Western Food"
-    },
-    {
-      "image": "assets/img/img.png",
-      "name": "Sankalp Restaurant",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafa",
-      "food_type": "South Indian"
-    },
-    {
-      "image": "assets/img/res_3.png",
-      "name": "Dangee Dums",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafa",
-      "food_type": "Bakery"
-    },
-  ];
-
-  List mostPopArr = [
-    {
-      "image": "assets/img/m_res_1.png",
-      "name": "Coffee by De-bella",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafa",
-      "food_type": "Western Food"
-    },
-    {
-      "image": "assets/img/m_res_2.png",
-      "name": "Café de Noir",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafa",
-      "food_type": "Western Food"
-    },
+    {"image": "assets/img/cuisines/chinese.jpg", "name": "Chinese"},
+    {"image": "assets/img/cuisines/chaat.jpg", "name": "Chaat"},
+    {"image": "assets/img/cuisines/fastfood.jpg", "name": "Fast Food"},
+    {"image": "assets/img/cuisines/juice.jpeg", "name": "Juices"},
   ];
 
   List recentArr = [
@@ -193,8 +160,28 @@ class _HomeViewState extends State<HomeView> {
     super.initState();
     _fetchLocation();
     _getUserLocation();
-    _loadCSV();
+    _fetchRestaurants();
+    // _loadCSV();
     txtName.text = widget.userName ?? '';
+  }
+
+  List<dynamic> _restaurants = [];
+
+  Future<void> _fetchRestaurants() async {
+    final response = await http.get(
+        Uri.parse('https://food-app-cdn-new.onrender.com/api/get-restaurants'));
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['status'] == 'success') {
+        setState(() {
+          _restaurants = data['restaurants'];
+        });
+      } else {
+        print('Error: ${data['message']}');
+      }
+    } else {
+      print('Failed to fetch restaurants');
+    }
   }
 
   void _fetchLocation() async {
@@ -233,12 +220,16 @@ class _HomeViewState extends State<HomeView> {
     } else if (isHoli) {
       backgroundColor = Colors.orange.withOpacity(0.5);
     } else {
-      backgroundColor = Colors.purple.withOpacity(0.5);
+      backgroundColor = Colors.orange.withOpacity(0.5);
     }
 
     if (_userCity == null) {
       return Center(
-        child: CircularProgressIndicator(),
+        child: SpinKitWaveSpinner(
+          color: TColor.primary,
+          size: 50.0,
+          // controller: AnimationController(vsync: this, duration: const Duration(milliseconds: 1200)),
+        ),
       );
     }
 
@@ -278,19 +269,19 @@ class _HomeViewState extends State<HomeView> {
                           ),
                         ],
                       ),
-                      IconButton(
-                        onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const MyOrderView()));
-                        },
-                        icon: Image.asset(
-                          "assets/img/shopping_cart.png",
-                          width: 25,
-                          height: 25,
-                        ),
-                      ),
+                      // IconButton(
+                      //   onPressed: () {
+                      //     Navigator.push(
+                      //         context,
+                      //         MaterialPageRoute(
+                      //             builder: (context) => const MyOrderView()));
+                      //   },
+                      //   icon: Image.asset(
+                      //     "assets/img/shopping_cart.png",
+                      //     width: 25,
+                      //     height: 25,
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
@@ -369,7 +360,12 @@ class _HomeViewState extends State<HomeView> {
                       return CategoryCell(
                         cObj: cObj,
                         onTap: () {
-
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => CuisineWiseRestaurants(
+                                      name: cObj['name'],
+                                  )));
                         },
                       );
                     }),
@@ -380,7 +376,11 @@ class _HomeViewState extends State<HomeView> {
                   child: ViewAllTitleRow(
                     title: "Popular Restaurants",
                     onView: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=>ViewAllPopularRestaurants(data: _data)));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ViewAllPopularRestaurants(
+                                  data: _restaurants)));
                     },
                   ),
                 ),
@@ -388,16 +388,17 @@ class _HomeViewState extends State<HomeView> {
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
                   padding: EdgeInsets.zero,
-                  itemCount: _data.length > 5 ? 5 : _data.length,
+                  itemCount: _restaurants.length > 5 ? 5 : _restaurants.length,
                   itemBuilder: ((context, index) {
-                    var pObj = _data[index];
+                    var pObj = _restaurants[index];
                     return PopularRestaurantRow(
                       pObj: pObj,
                       onTap: () {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => RestaurantMenu(restaurant: pObj)));
+                                builder: (context) =>
+                                    RestaurantMenu(restaurant: pObj)));
                       },
                     );
                   }),
@@ -406,7 +407,13 @@ class _HomeViewState extends State<HomeView> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: ViewAllTitleRow(
                     title: "Most Popular",
-                    onView: () {},
+                    onView: () {
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ViewAllPopularRestaurants(
+                                  data: _restaurants)));
+                    },
                   ),
                 ),
                 SizedBox(
@@ -414,13 +421,20 @@ class _HomeViewState extends State<HomeView> {
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 15),
-                    itemCount: mostPopArr.length,
+                    itemCount:  _restaurants.where((mObj) => mObj["rating"] > 4.5).length > 10?10:_restaurants.where((mObj) => mObj["rating"] > 4.5).length,
                     itemBuilder: ((context, index) {
-                      var mObj = mostPopArr[index] as Map? ?? {};
-                      return MostPopularCell(
-                        mObj: mObj,
-                        onTap: () {},
-                      );
+                      var mObj =  _restaurants.where((mObj) => mObj["rating"] > 4.5).toList()[index];
+                      if (mObj["rating"] > 3)
+                        return MostPopularCell(
+                          mObj: mObj,
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        RestaurantMenu(restaurant: mObj)));
+                          },
+                        );
                     }),
                   ),
                 ),

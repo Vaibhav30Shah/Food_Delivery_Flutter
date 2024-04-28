@@ -4,9 +4,9 @@ import 'package:food_delivery/common_widget/popular_resutaurant_row.dart';
 import 'package:food_delivery/view/menu/restaurant_menu.dart';
 
 class ViewAllPopularRestaurants extends StatefulWidget {
-  final List<Map<String, dynamic>>? data;
+  final List<dynamic> data;
 
-  const ViewAllPopularRestaurants({super.key, this.data});
+  const ViewAllPopularRestaurants({super.key,required this.data});
 
   @override
   State<ViewAllPopularRestaurants> createState() =>
@@ -14,6 +14,7 @@ class ViewAllPopularRestaurants extends StatefulWidget {
 }
 
 class _ViewAllPopularRestaurantsState extends State<ViewAllPopularRestaurants> {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,16 +58,16 @@ class _ViewAllPopularRestaurantsState extends State<ViewAllPopularRestaurants> {
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
                         padding: EdgeInsets.zero,
-                        itemCount: widget.data?.length,
+                        itemCount: 150,
                         itemBuilder: ((context, index) {
-                          var pObj = widget.data?[index];
+                          var pObj = widget.data[index];
                           return PopularRestaurantRow(
-                            pObj: pObj!,
+                            pObj: pObj,
                             onTap: () {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => RestaurantMenu()));
+                                      builder: (context) => RestaurantMenu(restaurant: pObj)));
                             },
                           );
                         }),

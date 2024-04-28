@@ -16,13 +16,37 @@ class MyOrderView extends StatefulWidget {
 
 class _MyOrderViewState extends State<MyOrderView> {
   String? deliveryInstruction;
-  // List itemArr = [
-  //   {"name": "Beef Burger", "qty": "1", "price": 16.0},
-  //   {"name": "Classic Burger", "qty": "1", "price": 14.0},
-  //   {"name": "Cheese Chicken Burger", "qty": "1", "price": 17.0},
-  //   {"name": "Chicken Legs Basket", "qty": "1", "price": 15.0},
-  //   {"name": "French Fires Large", "qty": "1", "price": 6.0}
-  // ];
+
+  final Map<String, String> cuisineImageMap = {
+    'Indian': "assets/img/cuisines/indian_chinese.png",
+    'Gujarati':'assets/img/cuisines/gujarati.jpg',
+    'Fast Food': 'assets/img/cuisines/fastfood.jpg',
+    'North Indian':'assets/img/cuisines/northindian.jpg',
+    'Combo':'assets/img/cuisines/combo.jpg',
+    'Biryani':'assets/img/cuisines/biryani.jpg',
+    'Waffle':'assets/img/cuisines/waffles.jpg',
+    'Chinese':'assets/img/cuisines/chinese.jpg',
+    'Thai':'assets/img/cuisines/thai.jpg',
+    'Pizzas':'assets/img/cuisines/pizza.jpg',
+    'Chaat':'assets/img/cuisines/chaat.jpg',
+    'Street Food':'assets/img/cuisines/streetfood.jpg',
+    'Beverages':'assets/img/cuisines/beverages.jpg',
+    'Mexican':'assets/img/cuisines/mexican.jpg',
+    'Snacks':'assets/img/cuisines/snacks.jpg',
+    'Pastas':'assets/img/cuisines/pasta.jpg',
+    'Thalis':'assets/img/cuisines/thali.jpg',
+    'South Indian':'assets/img/south_indian.png',
+    'Bakery':'assets/img/cuisines/desserts.jpg',
+    'Desserts':'assets/img/cuisines/desserts.jpg',
+    'Ice Cream':'assets/img/cuisines/desserts.jpg',
+    'Rajasthani':'assets/img/cuisines/rajasthani.jpg',
+    'Sweets':'assets/img/cuisines/sweets.jpg',
+    'Continental':'assets/img/cuisines/continental.jpg',
+    'Healthy':'assets/img/cuisines/healthy.jpg',
+    'Juices':'assets/img/cuisines/juice.jpeg',
+
+    // Add more key-value pairs for other cuisines
+  };
 
   double calculateSubTotalPrice(List itemArr) {
     double totalPrice = 0.0;
@@ -41,12 +65,23 @@ class _MyOrderViewState extends State<MyOrderView> {
       final qty = int.parse(item['qty'].toString());
       totalPrice += price * qty;
     }
-    totalPrice+=20;
+    widget.itemArr!.isEmpty?totalPrice=0:totalPrice+=20;
     return totalPrice;
   }
 
   @override
   Widget build(BuildContext context) {
+    final String cuisineString = widget.restArr['cuisine'];
+    final List<String> cuisines = cuisineString.split(',').map((cuisine) => cuisine.trim()).toList();
+
+    String imagePath = 'assets/img/logo.png';
+    for (final cuisine in cuisines) {
+      if (cuisineImageMap.containsKey(cuisine)) {
+        imagePath = cuisineImageMap[cuisine]!;
+        break;
+      }
+    }
+
     return Scaffold(
       backgroundColor: TColor.white,
       body: SingleChildScrollView(
@@ -92,7 +127,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                     ClipRRect(
                         borderRadius: BorderRadius.circular(15),
                         child: Image.asset(
-                          "assets/img/shop_logo.png",
+                          imagePath,
                           width: 80,
                           height: 80,
                           fit: BoxFit.cover,
@@ -340,7 +375,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                               fontWeight: FontWeight.w700),
                         ),
                         Text(
-                          "₹ 20",
+                          widget.itemArr!.isEmpty?"0":"₹ 20",
                           style: TextStyle(
                               color: TColor.primary,
                               fontSize: 13,
@@ -387,7 +422,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const CheckoutView(),
+                              builder: (context) => CheckoutView(itemArr: widget.itemArr,),
                             ),
                           );
                         }),

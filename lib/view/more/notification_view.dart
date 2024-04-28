@@ -81,19 +81,19 @@ class _NotificationsViewState extends State<NotificationsView> {
                             fontWeight: FontWeight.w800),
                       ),
                     ),
-                    IconButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const MyOrderView()));
-                      },
-                      icon: Image.asset(
-                        "assets/img/shopping_cart.png",
-                        width: 25,
-                        height: 25,
-                      ),
-                    ),
+                    // IconButton(
+                    //   onPressed: () {
+                    //     Navigator.push(
+                    //         context,
+                    //         MaterialPageRoute(
+                    //             builder: (context) => const MyOrderView()));
+                    //   },
+                    //   icon: Image.asset(
+                    //     "assets/img/shopping_cart.png",
+                    //     width: 25,
+                    //     height: 25,
+                    //   ),
+                    // ),
                   ],
                 ),
               ),

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:food_delivery/authentication/authentication_helper.dart';
@@ -12,7 +13,7 @@ import 'package:food_delivery/view/login/sing_up_view.dart';
 import 'package:food_delivery/view/main_tabview/main_tabview.dart';
 import 'package:food_delivery/view/on_boarding/on_boarding_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../common/service_call.dart';
 import '../../common_widget/round_icon_button.dart';
 import '../../common_widget/round_textfield.dart';
@@ -30,7 +31,9 @@ class _LoginViewState extends State<LoginView> {
   final authHelper = AuthenticationHelper();
   String? email;
   String? password;
+  ValueNotifier userCredential = ValueNotifier('');
 
+  //https://food-delivery-flutter-d9c4e.firebaseapp.com/__/auth/handler callback url of fb
   bool _obscureText = true;
 
   final _formKey = GlobalKey<FormState>();
@@ -39,17 +42,46 @@ class _LoginViewState extends State<LoginView> {
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
 
-    Future<void> storeUserData(String userId, String userName, String userEmail) async {
+    Future<void> storeUserData(
+        String userId, String userName, String userEmail) async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('userId', userId);
       await prefs.setString('userName', userName);
       await prefs.setString('userEmail', userEmail);
     }
 
+    Future<dynamic> signInWithGoogle() async {
+      try {
+        final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+        final GoogleSignInAuthentication? googleAuth =
+            await googleUser?.authentication;
+
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth?.accessToken,
+          idToken: googleAuth?.idToken,
+        );
+
+        return await FirebaseAuth.instance.signInWithCredential(credential);
+      } on Exception catch (e) {
+        // TODO
+        print('exception->$e');
+      }
+    }
+
+    Future<bool> signOutFromGoogle() async {
+      try {
+        await FirebaseAuth.instance.signOut();
+        return true;
+      } on Exception catch (_) {
+        return false;
+      }
+    }
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      body: ListView(
-        children:[ Form(
+      body: ListView(children: [
+        Form(
           key: _formKey,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 25),
@@ -89,7 +121,7 @@ class _LoginViewState extends State<LoginView> {
                       ),
                     ),
                   ),
-                  validator: (value)=>TValidator.validateEmail(value),
+                  validator: (value) => TValidator.validateEmail(value),
                   onSaved: (val) {
                     email = val;
                   },
@@ -97,7 +129,6 @@ class _LoginViewState extends State<LoginView> {
                 const SizedBox(
                   height: 25,
                 ),
-
                 TextFormField(
                   controller: txtPassword,
                   keyboardType: TextInputType.visiblePassword,
@@ -125,9 +156,8 @@ class _LoginViewState extends State<LoginView> {
                   onSaved: (val) {
                     password = val;
                   },
-                  validator: (value)=>TValidator.validatePassword(value),
+                  validator: (value) => TValidator.validatePassword(value),
                 ),
-
                 const SizedBox(
                   height: 25,
                 ),
@@ -136,22 +166,26 @@ class _LoginViewState extends State<LoginView> {
                     onPressed: () {
                       // btnLogin();
 
-                      if (_formKey.currentState != null && _formKey.currentState!.validate()) {
+                      if (_formKey.currentState != null &&
+                          _formKey.currentState!.validate()) {
                         _formKey.currentState!.save();
 
                         AuthenticationHelper()
                             .signIn(email: email!, password: password!)
                             .then((result) {
                           if (result == null) {
-                            String userId = authHelper.user?.uid; // Get the user ID from Firebase Authentication
+                            String userId = authHelper.user
+                                ?.uid; // Get the user ID from Firebase Authentication
                             String userName = txtEmail.text.split('@')[0];
                             String userEmail = txtEmail.text;
 
                             // Retrieve user details from SharedPreferences
                             SharedPreferences.getInstance().then((prefs) {
-                              String name=prefs.getString('userName') ?? '';
-                              String userMobile = prefs.getString('userMobile') ?? '';
-                              String userAddress = prefs.getString('userAddress') ?? '';
+                              String name = prefs.getString('userName') ?? '';
+                              String userMobile =
+                                  prefs.getString('userMobile') ?? '';
+                              String userAddress =
+                                  prefs.getString('userAddress') ?? '';
 
                               Navigator.pushReplacement(
                                 context,
@@ -172,17 +206,20 @@ class _LoginViewState extends State<LoginView> {
                             //     style: TextStyle(fontSize: 16),
                             //   ),
                             // ));
-                            TLoaders.errorSnackBar(title: "Ah Snap", message: result);
+                            TLoaders.errorSnackBar(
+                                title: "Ah Snap", message: result);
                           }
                         });
-                      }
-                      else {
+                      } else {
                         TLoaders.errorSnackBar(
-                            title: "Ah Snap", message: "Enter Valid credentials");
+                            title: "Ah Snap",
+                            message: "Enter Valid credentials");
                       }
                       Future<void> login() async {
-                        SharedPreferences prefs = await SharedPreferences.getInstance();
-                        await prefs.setString('token', KKey.authToken); // Store the token
+                        SharedPreferences prefs =
+                            await SharedPreferences.getInstance();
+                        await prefs.setString(
+                            'token', KKey.authToken); // Store the token
                       }
                     }),
                 const SizedBox(
@@ -215,24 +252,92 @@ class _LoginViewState extends State<LoginView> {
                       fontSize: 14,
                       fontWeight: FontWeight.w500),
                 ),
+                // const SizedBox(
+                //   height: 30,
+                // ),
+                // RoundIconButton(
+                //   icon: "assets/img/facebook_logo.png",
+                //   title: "Login with Facebook",
+                //   color: const Color(0xff367FC0),
+                //   onPressed: () {},
+                // ),
                 const SizedBox(
                   height: 30,
                 ),
-                RoundIconButton(
-                  icon: "assets/img/facebook_logo.png",
-                  title: "Login with Facebook",
-                  color: const Color(0xff367FC0),
-                  onPressed: () {},
-                ),
-                const SizedBox(
-                  height: 25,
-                ),
-                RoundIconButton(
-                  icon: "assets/img/google_logo.png",
-                  title: "Login with Google",
-                  color: const Color(0xffDD4B39),
-                  onPressed: () {},
-                ),
+                // ValueListenableBuilder(
+                //     valueListenable: userCredential,
+                //     builder: (context, value, child) {
+                //         RoundIconButton(
+                //           icon: "assets/img/google_logo.png",
+                //           title: "Login with Google",
+                //           color: const Color(0xffDD4B39),
+                //           onPressed: () async {
+                //             userCredential.value = await signInWithGoogle();
+                //             if (userCredential.value != null)
+                //               print((userCredential.value as UserCredential).user!.email);
+                //           },
+                //         );
+                //         final googleUser = userCredential.value.user;
+                //         if (googleUser != null) {
+                //           Navigator.pushReplacement(
+                //             context,
+                //             MaterialPageRoute(
+                //               builder: (context) => MainTabView(
+                //                 userName: googleUser.displayName,
+                //                 userEmail: googleUser.email,
+                //                 userProfilePicture: googleUser.photoURL,
+                //               ),
+                //             ),
+                //           );
+                //         }
+                        // Navigator.pushReplacement(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (context) => MainTabView(
+                        //       userName: name,
+                        //       userEmail: userEmail,
+                        //       userMobile: userMobile,
+                        //       userAddress: userAddress,
+                        //     ),
+                        //   ),
+                        // )
+                        // Center(
+                        //   child: Column(
+                        //     crossAxisAlignment: CrossAxisAlignment.center,
+                        //     mainAxisAlignment: MainAxisAlignment.center,
+                        //     children: [
+                        //       Container(
+                        //         clipBehavior: Clip.antiAlias,
+                        //         decoration: BoxDecoration(
+                        //             shape: BoxShape.circle,
+                        //             border: Border.all(
+                        //                 width: 1.5, color: Colors.black54)),
+                        //         child: Image.network(
+                        //             userCredential.value.user!.photoURL.toString()),
+                        //       ),
+                        //       const SizedBox(
+                        //         height: 20,
+                        //       ),
+                        //       Text(userCredential.value.user!.displayName
+                        //           .toString()),
+                        //       const SizedBox(
+                        //         height: 20,
+                        //       ),
+                        //       Text(userCredential.value.user!.email.toString()),
+                        //       const SizedBox(
+                        //         height: 30,
+                        //       ),
+                        //       ElevatedButton(
+                        //           onPressed: () async {
+                        //             bool result = await signOutFromGoogle();
+                        //             if (result) userCredential.value = '';
+                        //           },
+                        //           child: const Text('Logout'))
+                        //     ],
+                        //   ),
+                        // );
+                      return Container();
+                    }),
                 const SizedBox(
                   height: 80,
                 ),
@@ -269,8 +374,7 @@ class _LoginViewState extends State<LoginView> {
             ),
           ),
         ),
-      ]
-      ),
+      ]),
     );
   }
 
@@ -288,7 +392,11 @@ class _LoginViewState extends State<LoginView> {
 
     endEditing();
 
-    serviceCallLogin({"email": txtEmail.text, "password": txtPassword.text, "push_token": "" });
+    serviceCallLogin({
+      "email": txtEmail.text,
+      "password": txtPassword.text,
+      "push_token": ""
+    });
   }
 
   //TODO: ServiceCall
@@ -300,13 +408,15 @@ class _LoginViewState extends State<LoginView> {
         withSuccess: (responseObj) async {
       Globs.hideHUD();
       if (responseObj[KKey.status] == "1") {
-        
-        Globs.udSet( responseObj[KKey.payload] as Map? ?? {} , Globs.userPayload);
+        Globs.udSet(responseObj[KKey.payload] as Map? ?? {}, Globs.userPayload);
         Globs.udBoolSet(true, Globs.userLogin);
 
-          Navigator.pushAndRemoveUntil(context,  MaterialPageRoute(
-            builder: (context) => const OnBoardingView(),
-          ), (route) => false);
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const OnBoardingView(),
+            ),
+            (route) => false);
       } else {
         mdShowAlert(Globs.appName,
             responseObj[KKey.message] as String? ?? MSG.fail, () {});

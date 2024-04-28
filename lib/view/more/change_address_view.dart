@@ -2,6 +2,8 @@ import 'package:custom_map_markers/custom_map_markers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../common/color_extension.dart';
@@ -15,29 +17,58 @@ class ChangeAddressView extends StatefulWidget {
 }
 
 class _ChangeAddressViewState extends State<ChangeAddressView> {
-  GoogleMapController? _controller;
+  Position? _currentPosition;
+  late GoogleMapController _controller;
 
-  final locations = const [
-    LatLng(37.42796133580664, -122.085749655962),
-  ];
+  final locations = [];
 
-  late List<MarkerData> _customMarkers;
+  String? _userCity;
 
-  static const CameraPosition _kLake = CameraPosition(
-      bearing: 192.8334901395799,
-      target: LatLng(37.42796133580664, -122.085749655962),
-      // tilt: 59.440717697143555,
-      zoom: 14.151926040649414);
+  Future<void> _getUserLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      setState(() {
+        _currentPosition = position;
+      });
+
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        Placemark placemark = placemarks.first;
+        String city = placemark.locality ?? '';
+        setState(() {
+          _userCity = city;
+        });
+      }
+    } catch (e) {
+      print('Error getting user location: $e');
+    }
+  }
+
+  // late List<MarkerData> _customMarkers;
+  //
+  // static const CameraPosition _kLake = CameraPosition(
+  //     bearing: 192.8334901395799,
+  //     target: LatLng(37.42796133580664, -122.085749655962),
+  //     // tilt: 59.440717697143555,
+  //     zoom: 14.151926040649414);
 
   @override
   void initState() {
     super.initState();
-    _customMarkers = [
-      MarkerData(
-          marker:
-              Marker(markerId: const MarkerId('id-1'), position: locations[0]),
-          child: _customMarker('Everywhere\nis a Widgets', Colors.blue)),
-    ];
+    _getUserLocation();
+    // _customMarkers = [
+    //   MarkerData(
+    //       marker:
+    //           Marker(markerId: const MarkerId('id-1'), position: locations[0]),
+    //       child: _customMarker('Everywhere\nis a Widgets', Colors.blue)),
+    // ];
   }
 
   _customMarker(String symbol, Color color) {
@@ -75,67 +106,68 @@ class _ChangeAddressViewState extends State<ChangeAddressView> {
               fontWeight: FontWeight.w800),
         ),
       ),
-      body: CustomGoogleMapMarkerBuilder(
-        //screenshotDelay: const Duration(seconds: 4),
-        customMarkers: _customMarkers,
-        builder: (BuildContext context, Set<Marker>? markers) {
-          if (markers == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          return GoogleMap(
+      body: _currentPosition==null ? const Center(child: CircularProgressIndicator())
+      : GoogleMap(
             mapType: MapType.normal,
-            initialCameraPosition: _kLake,
+            initialCameraPosition: CameraPosition(
+              target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+              zoom: 14,
+            ),
             compassEnabled: false,
             gestureRecognizers: Set()
               ..add(Factory<PanGestureRecognizer>(
                 () => PanGestureRecognizer(),
               )),
-            markers: markers,
+            markers: {
+              Marker(
+                markerId: const MarkerId('userLocation'),
+                position: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+                infoWindow: InfoWindow(title: 'Your Location'),
+              ),
+            },
             onMapCreated: (GoogleMapController controller) {
               _controller = controller;
             },
-          );
-        },
-      ),
-      bottomNavigationBar: BottomAppBar(
-          child: SafeArea(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric( vertical: 15 , horizontal: 25),
-            child: RoundTextfield(
-              hintText: "Search Address",
-              left: Icon(Icons.search, color: TColor.primaryText),
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric( horizontal: 25),
-            child: Row(children: [
-
-              Image.asset('assets/img/fav_icon.png', width: 35, height: 35 ), 
-
-              const SizedBox(width: 8,),
-
-              Expanded(
-                child: Text(
-                  "Choose a saved place",
-                  style: TextStyle(
-                      color: TColor.primaryText,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600),
-                ),
-              ),
-
-              Image.asset('assets/img/btn_next.png', width: 15, height: 15, color: TColor.primaryText, )
-
-            ]),
-          ),
-
-
-        ],
-      ))),
-    );
+          )
+      );
+    //   bottomNavigationBar: BottomAppBar(
+    //       child: SafeArea(
+    //           child: Column(
+    //     mainAxisSize: MainAxisSize.min,
+    //     children: [
+    //       Padding(
+    //         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 25),
+    //         child: RoundTextfield(
+    //           hintText: "Search Address",
+    //           left: Icon(Icons.search, color: TColor.primaryText),
+    //         ),
+    //       ),
+    //       Padding(
+    //         padding: const EdgeInsets.symmetric(horizontal: 25),
+    //         child: Row(children: [
+    //           Image.asset('assets/img/fav_icon.png', width: 35, height: 35),
+    //           const SizedBox(
+    //             width: 8,
+    //           ),
+    //           Expanded(
+    //             child: Text(
+    //               "Choose a saved place",
+    //               style: TextStyle(
+    //                   color: TColor.primaryText,
+    //                   fontSize: 14,
+    //                   fontWeight: FontWeight.w600),
+    //             ),
+    //           ),
+    //           Image.asset(
+    //             'assets/img/btn_next.png',
+    //             width: 15,
+    //             height: 15,
+    //             color: TColor.primaryText,
+    //           )
+    //         ]),
+    //       ),
+    //     ],
+    //   ))),
+    // );
   }
 }

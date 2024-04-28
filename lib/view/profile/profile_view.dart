@@ -15,6 +15,7 @@ class ProfileView extends StatefulWidget {
   final String? userMobile;
   final String? userAddress;
   final String? userName;
+  final String? userProfilePicture;
 
   const ProfileView({
     super.key,
@@ -22,8 +23,8 @@ class ProfileView extends StatefulWidget {
     this.userMobile,
     this.userAddress,
     this.userName,
+    this.userProfilePicture,
   });
-
 
   @override
   State<ProfileView> createState() => _ProfileViewState();
@@ -71,19 +72,19 @@ class _ProfileViewState extends State<ProfileView> {
                       fontSize: 20,
                       fontWeight: FontWeight.w800),
                 ),
-                IconButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const MyOrderView()));
-                  },
-                  icon: Image.asset(
-                    "assets/img/shopping_cart.png",
-                    width: 25,
-                    height: 25,
-                  ),
-                ),
+                // IconButton(
+                //   onPressed: () {
+                //     Navigator.push(
+                //         context,
+                //         MaterialPageRoute(
+                //             builder: (context) => const MyOrderView()));
+                //   },
+                //   icon: Image.asset(
+                //     "assets/img/shopping_cart.png",
+                //     width: 25,
+                //     height: 25,
+                //   ),
+                // ),
               ],
             ),
           ),
@@ -98,12 +99,18 @@ class _ProfileViewState extends State<ProfileView> {
               borderRadius: BorderRadius.circular(50),
             ),
             alignment: Alignment.center,
-            child: image != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: Image.file(File(image!.path),
-                        width: 100, height: 100, fit: BoxFit.cover),
-                  )
+            child: widget.userProfilePicture != null
+                ? image != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(50),
+                        child: Image.file(File(image!.path),
+                            width: 100, height: 100, fit: BoxFit.cover),
+                      )
+                    : ClipRRect(
+              borderRadius: BorderRadius.circular(50),
+              child: Image.network(widget.userProfilePicture.toString(),
+                  width: 100, height: 100, fit: BoxFit.cover),
+            )
                 : Icon(
                     Icons.person,
                     size: 65,
@@ -133,15 +140,15 @@ class _ProfileViewState extends State<ProfileView> {
                 fontWeight: FontWeight.w700),
           ),
           TextButton(
-              onPressed: () async {
-                await AuthenticationHelper().logout();
-                // Navigate back to the LoginView
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginView()),
-                      (route) => false,
-                );
-              },
+            onPressed: () async {
+              await AuthenticationHelper().logout();
+              // Navigate back to the LoginView
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => LoginView()),
+                (route) => false,
+              );
+            },
             child: Text(
               "Sign Out",
               style: TextStyle(
@@ -187,24 +194,24 @@ class _ProfileViewState extends State<ProfileView> {
               controller: txtAddress,
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-            child: RoundTitleTextfield(
-              title: "Password",
-              hintText: "* * * * * *",
-              obscureText: true,
-              controller: txtPassword,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-            child: RoundTitleTextfield(
-              title: "Confirm Password",
-              hintText: "* * * * * *",
-              obscureText: true,
-              controller: txtConfirmPassword,
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+          //   child: RoundTitleTextfield(
+          //     title: "Password",
+          //     hintText: "* * * * * *",
+          //     obscureText: true,
+          //     controller: txtPassword,
+          //   ),
+          // ),
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+          //   child: RoundTitleTextfield(
+          //     title: "Confirm Password",
+          //     hintText: "* * * * * *",
+          //     obscureText: true,
+          //     controller: txtConfirmPassword,
+          //   ),
+          // ),
           const SizedBox(
             height: 20,
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:food_delivery/view/home/cuisine_wise_restaurants.dart';
 
 import '../../common/color_extension.dart';
 import '../../common_widget/round_textfield.dart';
@@ -15,24 +16,29 @@ class MenuView extends StatefulWidget {
 class _MenuViewState extends State<MenuView> {
   List menuArr = [
     {
-      "name": "Food",
-      "image": "assets/img/menu_1.png",
-      "items_count": "120",
+      "name": "Desserts",
+      "image": "assets/img/cuisines/desserts.jpg",
+      "items_count": "33",
+    },
+    {
+      "name": "Pizzas",
+      "image": "assets/img/cuisines/pizza.jpg",
+      "items_count": "61",
+    },
+    {
+      "name": "Sweets",
+      "image": "assets/img/cuisines/sweets.jpg",
+      "items_count": "9",
     },
     {
       "name": "Beverages",
-      "image": "assets/img/menu_2.png",
-      "items_count": "220",
+      "image": "assets/img/cuisines/beverages.jpg",
+      "items_count": "74",
     },
     {
-      "name": "Desserts",
-      "image": "assets/img/menu_3.png",
-      "items_count": "155",
-    },
-    {
-      "name": "Promotions",
-      "image": "assets/img/menu_4.png",
-      "items_count": "25",
+      "name": "Street Food",
+      "image": "assets/img/cuisines/streetfood.jpg",
+      "items_count": "23",
     },
   ];
   TextEditingController txtSearch = TextEditingController();
@@ -75,19 +81,19 @@ class _MenuViewState extends State<MenuView> {
                               fontSize: 20,
                               fontWeight: FontWeight.w800),
                         ),
-                        IconButton(
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const MyOrderView()));
-                          },
-                          icon: Image.asset(
-                            "assets/img/shopping_cart.png",
-                            width: 25,
-                            height: 25,
-                          ),
-                        ),
+                        // IconButton(
+                        //   onPressed: () {
+                        //     Navigator.push(
+                        //         context,
+                        //         MaterialPageRoute(
+                        //             builder: (context) => const MyOrderView()));
+                        //   },
+                        //   icon: Image.asset(
+                        //     "assets/img/shopping_cart.png",
+                        //     width: 25,
+                        //     height: 25,
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),
@@ -126,9 +132,7 @@ class _MenuViewState extends State<MenuView> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => MenuItemsView(
-                                  mObj: mObj,
-                                ),
+                                builder: (context) => CuisineWiseRestaurants(name: mObj['name'])
                               ),
                             );
                           },
@@ -158,11 +162,14 @@ class _MenuViewState extends State<MenuView> {
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Image.asset(
-                                    mObj["image"].toString(),
-                                    width: 80,
-                                    height: 80,
-                                    fit: BoxFit.contain,
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(15),
+                                    child: Image.asset(
+                                      mObj["image"].toString(),
+                                      width: 80,
+                                      height: 80,
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
                                   const SizedBox(
                                     width: 15,

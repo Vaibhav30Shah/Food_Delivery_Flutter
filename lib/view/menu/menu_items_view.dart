@@ -7,8 +7,8 @@ import '../more/my_order_view.dart';
 import 'item_details_view.dart';
 
 class MenuItemsView extends StatefulWidget {
-  final Map mObj;
-  const MenuItemsView({super.key, required this.mObj});
+  final String name;
+  const MenuItemsView({super.key, required this.name});
 
   @override
   State<MenuItemsView> createState() => _MenuItemsViewState();
@@ -111,7 +111,7 @@ class _MenuItemsViewState extends State<MenuItemsView> {
                     ),
                     Expanded(
                       child: Text(
-                        widget.mObj["name"].toString(),
+                        "widget.mObj.toString()",
                         style: TextStyle(
                             color: TColor.primaryText,
                             fontSize: 20,
